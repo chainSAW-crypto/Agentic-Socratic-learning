@@ -25,6 +25,8 @@ state = init_graph_state()  # Assuming this is predefined
 
 @app.post("/process_message", response_model=OutputPayload)
 async def process_message(payload: InputPayload):
+    global state  # Declare global here, before using it
+
     # Update state with new message
     state["messages"].append(HumanMessage(content=payload.user_input))
 
@@ -39,7 +41,24 @@ async def process_message(payload: InputPayload):
     )
 
     # Update the global state
-    global state
     state = new_state
 
     return output
+
+
+
+class ResetResponse(BaseModel):
+    status: str
+    message: str
+
+@app.post("/reset_state", response_model=ResetResponse)
+async def reset_state():
+    global state
+
+    # Reset the state to initial values
+    state = init_graph_state()
+
+    return ResetResponse(
+        status="success",
+        message="Graph state has been reset to initial values"
+    )
